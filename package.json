@@ -1,0 +1,10 @@
+{
+  "name": "anyreach",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AnyMind(AnyReach)アカウント用のGmail MCPサーバー。純正Gmailコネクタと併用する2つ目の口。",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "token": "node tools/get-refresh-token.js"
+  }
+}

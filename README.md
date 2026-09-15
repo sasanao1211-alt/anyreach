@@ -60,6 +60,17 @@ node tools/get-refresh-token.js
 表示されたURLをブラウザで開き、**AnyMindのアカウントで**同意する。
 ターミナルに `GMAIL_REFRESH_TOKEN=...` が出る。
 
+### 2.5. 手元で疎通確認
+
+クラウドに載せる前に、ローカルで通しておくと切り分けが早い。読み取りだけで何も書き込まない。
+
+```bash
+GMAIL_CLIENT_ID=xxx GMAIL_CLIENT_SECRET=yyy GMAIL_REFRESH_TOKEN=zzz npm run check
+```
+
+環境変数・トークン交換・スコープ・API到達・接続先アカウントを順に確認して、
+落ちた場所と対処を出す。
+
 ### 3. クラウド環境に環境変数を登録
 
 claude.ai → **設定 → 環境** → 使っている環境 → 環境変数に3つ登録する：
@@ -137,5 +148,20 @@ AnyMind側の許可とルールの問題になる。事前に確認しておく�
 .mcp.json                    MCPサーバーの宣言。クラウドセッションはこれを読む
 src/server.js                本体。JSON-RPC over stdio、依存ゼロ
 tools/get-refresh-token.js   初回のトークン取得（ローカル実行専用）
+tools/check.js               設定の疎通確認（npm run check）
+test/                        モックGmail APIを相手にした結合テスト（npm test）
 .env.example                 必要な環境変数の一覧
 ```
+
+## テスト
+
+```bash
+npm test
+```
+
+`fetch` をモックに差し替えて本体を子プロセスで起動し、stdio越しに全ツールを呼ぶ。
+Googleの認証情報なしで、検索・本文復号・下書き作成・返信ヘッダの引き継ぎまで通る。
+
+テスト自体が機能しているかは変異テストで確認してある。
+`References` の連結、`text/plain` の優先、件名のRFC 2047エンコード、
+返信時の `threadId` 付与 —— それぞれ壊すとテストが落ちる。

@@ -286,15 +286,21 @@ const handlers = {
       body: JSON.stringify({ message: { raw: buildRaw({ to, cc, subject, body, inReplyTo, references }), threadId } }),
     });
 
-    return [
+    // APIが実際に返した threadId だけを信じる。ここでローカルの threadId に
+    // フォールバックすると、スレッドに紐付いていないのに紐付いたと報告してしまう。
+    const actualThreadId = draft.message?.threadId;
+    const lines = [
       '下書きを作成した（送信はしていない）。',
       `draftId: ${draft.id}`,
-      `threadId: ${draft.message?.threadId ?? threadId ?? '(新規)'}`,
+      `threadId: ${actualThreadId ?? '(新規スレッド)'}`,
       `宛先: ${to.join(', ')}`,
       `件名: ${subject ?? ''}`,
-      '',
-      'Gmailの「下書き」フォルダで確認・編集して、送信はご自身で。',
-    ].join('\n');
+    ];
+    if (replyToMessageId && actualThreadId !== threadId) {
+      lines.push('', `警告: 返信のつもりだが、下書きが元スレッド(${threadId})に入っていない。`);
+    }
+    lines.push('', 'Gmailの「下書き」フォルダで確認・編集して、送信はご自身で。');
+    return lines.join('\n');
   },
 
   async list_drafts({ maxResults = 20 } = {}) {
